@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+
+        /*
+         * use crispEdges for a sharper looking axis
+         * since these are vertical/horizontal lines
+         * /
+        .axis line, .axis path{
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+
+        /*
+         * align text with a tick
+         */
+        rect.segment {
+            fill : orange;
+            fill-opacity: 0.6;
+            stroke: ;
+        }
+
+        .tick text{
+            text-anchor: middle; /* or start or end */
+        }
+
+        /*g.slider rect {cursor:ew-resize;}*/
+
+    </style>
+</head>
+<body>
+<div class="slider"></div>
+<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
+<script src="d3.v4.js"></script>
+<script src="PartitionSlider.js"></script>
+
+
+<div id="myPartition" ></div>
+
+<script>
+    var p = new PartitionSlider( {
+        id:'myPartition'
+    });
+
+
+
+</script>
+</body>
+</html>
