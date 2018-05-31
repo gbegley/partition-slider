@@ -1,6 +1,9 @@
 var PartitionSlider = function(config ){
 
-    var pct = d3.format(".0%");
+    var ps = this;
+    ps.pct = d3.format(".0%");
+    ps.f2p = d3.format(".2");
+    ps.f2d = function(d){return +ps.f2p(d);};
 
     var defaults = {
         segments : [
@@ -13,7 +16,7 @@ var PartitionSlider = function(config ){
         height:70,
         segment : {
             height:35,
-            format : function(d){return pct(d.pct);}
+            format : function(d){return ps.pct(d.pct);}
         },
         margins : {
             top:5,
@@ -24,7 +27,6 @@ var PartitionSlider = function(config ){
     };
 
 
-    var ps = this;
     ps.config = Object.create(config||{});
     for(var k in defaults) if(!ps.config[k]) ps.config[k] = defaults[k];
 
@@ -70,15 +72,15 @@ var PartitionSlider = function(config ){
             ;
         }
 
-        var start = 0;
+        var startPct = 0;
         var segments = tray.selectAll("g.segment").data(ps.segments);
         segments.exit().remove();
         segments.enter().append("g").attr("class",function(s){return "segment segment-"+s.name+" segment-pos-"+s.position;})
             .attr("transform",function( s ){
                 var w = ps.xscale(s.pct);
-                s.start = start;
-                start = start + w;
-                return "translate("+s.start+",0)"
+                s.startPct = startPct;
+                startPct = startPct + s.pct;
+                return "translate("+ps.xscale(s.startPct)+",0)"
             })
                 .append("rect")
                     .attr("class",function(s){return "segment segment-"+s.name;})
@@ -96,6 +98,7 @@ var PartitionSlider = function(config ){
             .each(function(d){
                 var g = d3.select(this);
                 var t1 = g.append("text")
+                    .classed("pctLabel",true)
                     .attr("dy",-ps.config.segment.height/6)
                     .style("font-size","10px")
                     .text(ps.config.segment.format);
@@ -150,10 +153,9 @@ var PartitionSlider = function(config ){
         tray.select("g.slider").remove();
     };
 
-
     var addDragHandlers = function(stage) {
         var container = stage.select(".segments-tray");
-        var pos = 0;
+        var dragStartPct = 0;
         stage.selectAll("g.segments-tray g.slider").call(
                 d3.drag()
                     .container(container.node())
@@ -161,51 +163,43 @@ var PartitionSlider = function(config ){
                         d3.event.sourceEvent.preventDefault();
                         d3.select(this).style("fill","red");
                         console.log('drag started');
-                        pos = d3.event.x;
+                        dragStartPct = ps.xscale.invert(d3.event.x);
                     })
                     .on("end",function(){
                         d3.select(this).style("fill","white");
                     })
                     .on("drag",function(){
-                        var gSlider = d3.select(this), d = d3.event.subject, p = d.position, delta = d3.event.x - pos;
+                        var gSlider = d3.select(this),
+                            d = d3.event.subject,
+                            p = d.position;
                         gSlider.attr("transform",function(d){
                             return "translate("+d3.event.x+",0)";
                         });
                         var h = ps.segments[d.position], l = ps.segments[d.position-1];
-                        h.pct -= delta;
-                        l.pct += delta;
+
+                        var slidePct = ps.f2d( ps.xscale.invert(d3.event.x));
+                        var hstartPct = h.startPct;
+                        var hdeltaPct = ps.f2d( slidePct - hstartPct );
+                        var hpctStartNew = ps.f2d(hstartPct + hdeltaPct);
+                        var hpct = ps.f2d( h.pct - hdeltaPct);
+                        var lpct = ps.f2d( l.pct + hdeltaPct);
+
                         // updateSegments(ps.stage);
-                        console.log("Pos:"+pos+" X: "+d3.event.x+" N: "+d.name+" pos: "+p+" dx: "+d3.event.dx+" D: "+delta+" LPct: "+l.pct+" HPct: "+h.pct);
+                        console.log("X: "+d3.event.x+
+                            " N: "+d.name+":"+p+" LPct: "+l.pct+"->"+lpct+" HPct: "+h.pct+"->"+hpct+"@"+hpctStartNew);
+
+                        var hw = ps.xscale(hpct), lw = ps.xscale(lpct), hp = ps.xscale(hpctStartNew);
+                        var hg = d3.select("g.segment-pos-"+p)
+                            .attr("transform","translate("+hp+",0)");
+                        hg.select("rect.segment").attr("width",hw);
+                        hg.select("g.label").attr("transform","translate("+hw/2+","+ps.config.segment.height/2+")");
+                        hg.select("text.pctLabel").text(ps.pct(hpct));
 
 
-
-
-
-                        // var traypct = pctp2(x.invert(trayx));
-                        // var d = d3.event.subject;
-                        //
-                        // var sh = d3.select(this);
-                        //
-                        //
-                        // var low = segments.get(d.position-1), high = d;
-                        // var lowTrayItem = d3.select(".slider-tray-item-"+low.position);
-                        // var newLowPct = pctp2( traypct - low.start );
-                        // var lowPctDelta = pctp2(newLowPct - low.pct);
-                        //
-                        // var highTrayItem = d3.select(".slider-tray-item-"+high.position);
-                        // var highPctDelta = pctp2(traypct-high.start);
-                        //
-                        // low.pct = newLowPct;
-                        // high.start = traypct;
-                        // high.pct = pctp2(high.pct-lowPctDelta);
-                        // console.log('dragging tray-x:'+trayx+" -> "+traypct+", low-pct: "+low.pct+"   high-pct: "+high.pct);
-                        //
-                        // sh.style("left",(traypct*100)+"%");
-                        // lowTrayItem.style("width",(low.pct*100)+"%");
-                        // lowTrayItem.select(".slider-tray-item-label").text(low.pct*100+"%")
-                        //
-                        // highTrayItem.style("left",(high.start*100)+"%").style("width",(high.pct)*100+'%');
-                        // highTrayItem.select(".slider-tray-item-label").text(high.pct*100+"%")
+                        var lg = d3.select("g.segment-pos-"+(p-1));
+                        lg.select("rect.segment").attr("width",lw);
+                        lg.select("g.label").attr("transform","translate("+lw/2+","+ps.config.segment.height/2+")");
+                        lg.select("text.pctLabel").text(ps.pct(lpct));
 
                     })
         );
