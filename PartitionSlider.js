@@ -182,7 +182,7 @@ var PartitionSlider = function(config ){
                         var hdeltaPct = ps.f2d( slidePct - hstartPct );
                         var hpctStartNew = ps.f2d(hstartPct + hdeltaPct);
                         var hpct = ps.f2d( h.pct - hdeltaPct);
-                        var lpct = ps.f2d( l.pct + hdeltaPct);
+                        var lpct = ps.f2d( hpctStartNew - l.startPct );
 
                         // updateSegments(ps.stage);
                         console.log("X: "+d3.event.x+
@@ -200,6 +200,10 @@ var PartitionSlider = function(config ){
                         lg.select("rect.segment").attr("width",lw);
                         lg.select("g.label").attr("transform","translate("+lw/2+","+ps.config.segment.height/2+")");
                         lg.select("text.pctLabel").text(ps.pct(lpct));
+
+                        h.pct = hpct;
+                        h.startPct = hpctStartNew;
+                        l.pct = lpct;
 
                     })
         );
