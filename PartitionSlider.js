@@ -6,6 +6,12 @@ var PartitionSlider = function(config ){
     ps.f2d = function(d){return +ps.f2p(d);};
 
     var defaults = {
+        colors : [
+            'rgba(255,0,0,0.7)',
+            'rgba(250,105,0,0.7)',
+            'rgba(79,155,255,0.5)',
+            'rgba(0,177,0,0.65)'
+        ],
         segments : [
             {name:'D',pct:0.30,color:'rgba(255,0,0,0.7)'},
             {name:'C',pct:0.40,color:'rgba(250,105,0,0.7)'},
@@ -26,22 +32,26 @@ var PartitionSlider = function(config ){
         },
     };
 
-
+    var ds = defaults.segments;
     ps.config = Object.create(config||{});
     for(var k in defaults) if(!ps.config[k]) ps.config[k] = defaults[k];
 
     ps.segments = ps.config.segments || defaults.segments;
     ps.segments.forEach(function(d,i){
         d.position = i;
+        if(!d.color) d.color = ds[i % ds.length ].color;
     });
 
     ps.id = config.id || 'partitionSlider';
-    ps.root = d3.select("#"+ps.id);
+    ps.root = ps.config.root ? ps.config.root : typeof ps.id == 'string' ? d3.select("#"+ps.id) : null;
     var cm = ps.config.margins;
 
 
-    var root = ps.root = d3.select("#"+config.id), svg = null;
-    if(!root) root = ps.root = d3.select("body");
+    ps.root = (ps.config.root && d3.select(ps.config.root)) ||
+        ps.config.selector && d3.select(ps.config.selector) ||
+        ps.config.id && d3.select("#"+ps.config.id);
+
+    if(!ps.root) ps.root = d3.select("body");
 
     var initialize = function(){
         // Create scale
@@ -154,6 +164,7 @@ var PartitionSlider = function(config ){
     };
 
     var addDragHandlers = function(stage) {
+        console.log('adding drag handlers');
         var container = stage.select(".segments-tray");
         var dragStartPct = 0;
         stage.selectAll("g.segments-tray g.slider").call(
@@ -212,7 +223,7 @@ var PartitionSlider = function(config ){
 
     if(ps.root) {
 
-        var bcr = root.node().getBoundingClientRect();
+        var bcr = ps.root.node().getBoundingClientRect();
         // Append SVG
         var svg = ps.svg = ps.root
             .append("svg")
