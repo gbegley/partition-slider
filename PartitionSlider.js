@@ -19,9 +19,9 @@ var PartitionSlider = function(config ){
             {name:'A',pct:0.10,color:'rgba(0,177,0,0.65)'}
         ],
         width:500,
-        height:70,
+        height:100,
         segment : {
-            height:35,
+            height:50,
             format : function(d){return ps.pct(d.pct);}
         },
         margins : {
@@ -196,8 +196,8 @@ var PartitionSlider = function(config ){
                         var lpct = ps.f2d( hpctStartNew - l.startPct );
 
                         // updateSegments(ps.stage);
-                        console.log("X: "+d3.event.x+
-                            " N: "+d.name+":"+p+" LPct: "+l.pct+"->"+lpct+" HPct: "+h.pct+"->"+hpct+"@"+hpctStartNew);
+                        // console.log("X: "+d3.event.x+
+                        //     " N: "+d.name+":"+p+" LPct: "+l.pct+"->"+lpct+" HPct: "+h.pct+"->"+hpct+"@"+hpctStartNew);
 
                         var hw = ps.xscale(hpct), lw = ps.xscale(lpct), hp = ps.xscale(hpctStartNew);
                         var hg = d3.select("g.segment-pos-"+p)

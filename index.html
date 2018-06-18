@@ -29,21 +29,130 @@
 
         /*g.slider rect {cursor:ew-resize;}*/
 
+        .metric-group h2 {
+            margin-left: 1em;
+            font: bold 18px "Palatino Linotype";
+        }
+
     </style>
 </head>
 <body>
-<div class="slider"></div>
 <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
 <script src="d3.v4.js"></script>
 <script src="PartitionSlider.js"></script>
 
 
-<div id="myPartition" ></div>
+
 
 <script>
-    var p = new PartitionSlider( {
-        id:'myPartition'
-    });
+
+    var profile =  {
+        "id" : "default",
+        "name" : "Default Customer Ranking Profile",
+        "groupingField":"CUST_GROUP1",
+        "rankThresholds" : {
+            "A":32.5,
+            "B":25,
+            "C":17.6,
+            "D":0
+        },
+        "metricGroups": [
+            {
+                "id": "buyingPower",
+                "name": "Buying Power",
+                "weight": 0.5,
+                "metrics": [
+                    {
+                        "id": "salesRevenue",
+                        "name" : "Sales Revenue",
+                        "weight": 0.45
+                    },
+                    {
+                        "id": "uniqueItems",
+                        "name" : "Unique Items",
+                        "weight": 0.2
+                    },
+                    {
+                        "id": "uniqueOrders",
+                        "name": "Unique Orders",
+                        "weight": 0.35
+                    }
+                ]
+            },
+            {
+                "id": "profitability",
+                "name": "Profitability",
+                "weight": 0.2,
+                "metrics": [
+                    {
+                        "id": "marginDollars",
+                        "name": "Margin Dollars",
+                        "weight": 0.40
+                    },
+                    {
+                        "id": "gppMetric",
+                        "name": "Gross Profit Percentage",
+                        "weight": 0.40
+                    },
+                    {
+                        "id": "avgOrderSizeMetric",
+                        "name": "Average Order Size",
+                        "weight": 0.20
+                    }
+                ]
+            },
+            {
+                "id": "costToServe",
+                "name": "Cost to Serve",
+                "weight": 0.3,
+                "metrics": [
+                    {
+                        "id": "avgLineItems",
+                        "name": "Average Lines Items",
+                        "weight": 1
+                    },
+                    {
+                        "id": "daysToPay",
+                        "name": "Days to Pay",
+                        "weight": 0
+                    },
+                    {
+                        "id": "pctReturnLines",
+                        "weight": 0
+                    }
+                ]
+            }
+        ]
+    };
+
+
+
+    var weightToPctMapper = function(d){d.pct = d.weight;if(!d.name) d.name=d.id;return d;};
+
+    var body = d3.select("body");
+
+
+    var profileSelection = body.selectAll("p").data([profile]).enter().append("p")
+        .attr("id", function(d) { return "profile_"+d.id; })
+    ;
+    profileSelection.append("h1").text(function(d,i){return d.name;});
+    var groupWeights = profile.metricGroups.map(weightToPctMapper);
+    var mgp = profileSelection.append("div").attr("class","metric-groups-partition");
+    var psMGP = new PartitionSlider({root:mgp.node(),segments:groupWeights,width:800,height:100});
+
+
+    var metricGroups = profileSelection.append("div").attr("class","metric-groups");
+     metricGroups.selectAll("div.metric-group")
+         .data(profile.metricGroups.map(weightToPctMapper)).enter()
+         .append("div").attr("class","metric-group")
+         .each(function(d,i){
+             var mg = d3.select(this);
+             mg.append("h2").text(d.name);
+             var mgp = mg.append("div").attr("class","metric-group.partition");
+             var metricWeights = d.metrics.map(weightToPctMapper);
+             var psMGP = new PartitionSlider({root:mgp.node(),segments:metricWeights,width:800,height:85});
+         })
+     ;
 
 
 
