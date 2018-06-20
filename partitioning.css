@@ -1,0 +1,42 @@
+
+/*
+ * use crispEdges for a sharper looking axis
+ * since these are vertical/horizontal lines
+ */
+.axis line, .axis path{
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+
+.title {
+    font-family: "Roboto", sans-serif;
+}
+.profile.title { margin-left:15px; }
+
+.metric-groups-partition { padding-bottom: 28px;}
+
+
+/*
+ * align text with a tick
+ */
+rect.segment {
+    fill : orange;
+    fill-opacity: 0.6;
+    /*stroke: ;*/
+}
+
+.tick text{
+    text-anchor: middle; /* or start or end */
+}
+
+/*g.slider rect {cursor:ew-resize;}*/
+
+.metric-group h2 {
+    margin-left: 1em;
+    font: bold 18px "Palatino Linotype";
+}
+
+
+

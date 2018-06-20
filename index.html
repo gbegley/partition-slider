@@ -2,44 +2,12 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <style>
-
-        /*
-         * use crispEdges for a sharper looking axis
-         * since these are vertical/horizontal lines
-         * /
-        .axis line, .axis path{
-          fill: none;
-          stroke: #000;
-          shape-rendering: crispEdges;
-        }
-
-        /*
-         * align text with a tick
-         */
-        rect.segment {
-            fill : orange;
-            fill-opacity: 0.6;
-            stroke: ;
-        }
-
-        .tick text{
-            text-anchor: middle; /* or start or end */
-        }
-
-        /*g.slider rect {cursor:ew-resize;}*/
-
-        .metric-group h2 {
-            margin-left: 1em;
-            font: bold 18px "Palatino Linotype";
-        }
-
-    </style>
+    <script src="d3.v4.js"></script>
+    <script src="PartitionSlider.js"></script>
+    <link rel="stylesheet" type="text/css" href="partitioning.css">
 </head>
 <body>
 <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
-<script src="d3.v4.js"></script>
-<script src="PartitionSlider.js"></script>
 
 
 
@@ -133,9 +101,10 @@
 
 
     var profileSelection = body.selectAll("p").data([profile]).enter().append("p")
+        .attr("class","profile")
         .attr("id", function(d) { return "profile_"+d.id; })
     ;
-    profileSelection.append("h1").text(function(d,i){return d.name;});
+    profileSelection.append("h1").attr("class","profile title").text(function(d,i){return d.name;});
     var groupWeights = profile.metricGroups.map(weightToPctMapper);
     var mgp = profileSelection.append("div").attr("class","metric-groups-partition");
     var psMGP = new PartitionSlider({root:mgp.node(),segments:groupWeights,width:800,height:100});
@@ -147,12 +116,17 @@
          .append("div").attr("class","metric-group")
          .each(function(d,i){
              var mg = d3.select(this);
-             mg.append("h2").text(d.name);
+             mg.append("h2").attr("class","metric-group title").text(d.name);
              var mgp = mg.append("div").attr("class","metric-group.partition");
              var metricWeights = d.metrics.map(weightToPctMapper);
              var psMGP = new PartitionSlider({root:mgp.node(),segments:metricWeights,width:800,height:85});
          })
      ;
+
+     var button = body.append("div").append("button").text("Log it");
+     button.on("click",function(d){
+         console.log('Profile: ',profile);
+     });
 
 
 

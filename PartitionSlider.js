@@ -197,14 +197,15 @@ var PartitionSlider = function(config ){
                 d3.drag()
                     .container(container.node())
                     .on("start",function(){
-                        console.log('drag started');
+                        var d = d3.event.subject;
+                        console.log('drag started on slider '+d.position);
                         d3.event.sourceEvent.preventDefault();
-                        d3.select(this).style("fill","red");
+                        d3.select(this).select("rect").style("fill","red");
                         dragStartPct = ps.xscale.invert(d3.event.x);
                     })
                     .on("end",function(){
                         console.log('drag ended');
-                        d3.select(this).style("fill","white");
+                        d3.select(this).selectAll("rect").style("fill","white");
                     })
                     .on("drag",function(){
                         var gSlider = d3.select(this),
@@ -215,6 +216,16 @@ var PartitionSlider = function(config ){
                         var h = pcs[d.position], l = pcs[d.position-1];
 
                         var slidePct = ps.f2dt( ps.xscale.invert(d3.event.x));
+
+
+
+                        if(slidePct < l.startPct) {
+                            slidePct = l.startPct;
+                        } else if (slidePct > (h.startPct+h.pct) ) {
+                            slidePct = h.startPct
+                        } else if (l.startPct == h.startPct ) {
+
+                        }
                         var hstartPct = h.startPct;
                         var hdeltaPct = slidePct - hstartPct;
                         var hpctStartNew = ps.f2d( hstartPct + hdeltaPct );
@@ -245,19 +256,19 @@ var PartitionSlider = function(config ){
                         lg.select("text.pctLabel").text(ps.pct(lpct));
 
                         h.pct = hpct;
+                        h.weight = h.pct;
                         h.startPct = hpctStartNew;
                         l.pct = lpct;
+                        l.weight = l.pct;
 
                     })
         );
     };
 
     var addRankDriverToMetric = function( stage ) {
-        var addRankDriverToMetricRect = function(d,i) {
-            var rect = d3.select(this);
-            console.log('addRankDriverToMetric, '+d.pct);
-        };
-        stage.selectAll("g.segment rect").call(addRankDriverToMetricRect);
+        stage.selectAll("g.segment rect").on("click",function(d,i){
+            console.log('Rect Click: '+d.name)
+        })
 
     };
 
