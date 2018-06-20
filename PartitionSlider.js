@@ -183,7 +183,7 @@ var PartitionSlider = function(config ){
         var container = stage.select(".segments-tray");
         var dragStartPct = 0;
         var pcs = ps.config.segments;
-        stage.selectAll("g.segments-tray g.slider").call(
+        container.selectAll("g.slider").call(
                 d3.drag()
                     .container(container.node())
                     .on("start",function(){
@@ -220,14 +220,14 @@ var PartitionSlider = function(config ){
                         //     " N: "+d.name+":"+p+" LPct: "+l.pct+"->"+lpct+" HPct: "+h.pct+"->"+hpct+"@"+hpctStartNew);
 
                         var hw = ps.xscale(hpct), lw = ps.xscale(lpct), hp = ps.xscale(hpctStartNew);
-                        var hg = d3.select("g.segment-pos-"+p)
+                        var hg = container.select("g.segment-pos-"+p)
                             .attr("transform","translate("+hp+",0)");
                         hg.select("rect.segment").attr("width",hw);
                         hg.select("g.label").attr("transform","translate("+hw/2+","+ps.config.segment.height/2+")");
                         hg.select("text.pctLabel").text(ps.pct(hpct));
 
 
-                        var lg = d3.select("g.segment-pos-"+(p-1));
+                        var lg = container.select("g.segment-pos-"+(p-1));
                         lg.select("rect.segment").attr("width",lw);
                         lg.select("g.label").attr("transform","translate("+lw/2+","+ps.config.segment.height/2+")");
                         lg.select("text.pctLabel").text(ps.pct(lpct));
@@ -238,6 +238,15 @@ var PartitionSlider = function(config ){
 
                     })
         );
+    };
+
+    var addRankDriverToMetric = function( stage ) {
+        var addRankDriverToMetricRect = function(d,i) {
+            var rect = d3.select(this);
+            console.log('addRankDriverToMetric, '+d.pct);
+        };
+        stage.selectAll("g.segment rect").call(addRankDriverToMetricRect);
+
     };
 
 
@@ -256,6 +265,7 @@ var PartitionSlider = function(config ){
         initialize();
         drawAxis( stage );
         updateSegments( stage );
+        addRankDriverToMetric( stage )
 
         addDragHandlers( stage );
 
