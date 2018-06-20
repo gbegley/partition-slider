@@ -5,6 +5,16 @@ var PartitionSlider = function(config ){
     ps.f2p = d3.format(".2");
     ps.f2d = function(d){return +ps.f2p(d);};
 
+    // limits to tick multiples between 0 and 1 inclusive;
+    ps.f2dt = function(d){
+        var m = 1/ps.config.tick;
+        var dm = Math.round(d*m);
+        if(dm<0) dm=0;
+        else if (dm>m) dm = m;
+        var x = dm/m;
+        return +ps.f2p(x);
+    };
+
     var defaults = {
         colors : [
             'rgba(255,0,0,0.7)',
@@ -197,29 +207,31 @@ var PartitionSlider = function(config ){
                         d3.select(this).style("fill","white");
                     })
                     .on("drag",function(){
-                        var dragPct = ps.xscale.invert(d3.event.x);
                         var gSlider = d3.select(this),
                             d = d3.event.subject,
                             p = d.position;
-                        gSlider.attr("transform",function(d){
-                            return "translate("+d3.event.x+",0)";
-                        });
 
                         // high and low segments
                         var h = pcs[d.position], l = pcs[d.position-1];
 
-                        var slidePct = ps.f2d( ps.xscale.invert(d3.event.x));
+                        var slidePct = ps.f2dt( ps.xscale.invert(d3.event.x));
                         var hstartPct = h.startPct;
-                        var hdeltaPct = ps.f2d( slidePct - hstartPct );
-                        var hpctStartNew = ps.f2d(hstartPct + hdeltaPct);
-                        var hpct = ps.f2d( h.pct - hdeltaPct);
-                        var lpct = ps.f2d( hpctStartNew - l.startPct );
+                        var hdeltaPct = slidePct - hstartPct;
+                        var hpctStartNew = ps.f2d( hstartPct + hdeltaPct );
+                        var hpct = ps.f2dt( h.pct - hdeltaPct);
+                        var lpct = ps.f2dt( hpctStartNew - l.startPct );
 
-                        // updateSegments(ps.stage);
-                        // console.log("X: "+d3.event.x+
-                        //     " N: "+d.name+":"+p+" LPct: "+l.pct+"->"+lpct+" HPct: "+h.pct+"->"+hpct+"@"+hpctStartNew);
+                        hpctStartNew = l.startPct + lpct;
 
-                        var hw = ps.xscale(hpct), lw = ps.xscale(lpct), hp = ps.xscale(hpctStartNew);
+
+                        var hw = ps.xscale(hpct), // new pixel width of segment above slider
+                            lw = ps.xscale(lpct), // new pixel width of segment below slider
+                            hp = ps.xscale(hpctStartNew); // new position of segment above slider
+
+                        gSlider.attr("transform",function(d){
+                            return "translate("+ps.xscale(slidePct)+",0)";
+                        });
+
                         var hg = container.select("g.segment-pos-"+p)
                             .attr("transform","translate("+hp+",0)");
                         hg.select("rect.segment").attr("width",hw);
