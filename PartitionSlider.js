@@ -30,21 +30,36 @@ var PartitionSlider = function(config ){
             bottom:2,
             left:14
         },
+        tick : 0.05,
+        x2Pct : function(){
+            var pct = ps.xscale.invert(d3.event.x);
+        }
     };
 
-    var ds = defaults.segments;
-    ps.config = Object.create(config||{});
-    for(var k in defaults) if(!ps.config[k]) ps.config[k] = defaults[k];
 
-    ps.segments = ps.config.segments || defaults.segments;
-    ps.segments.forEach(function(d,i){
+    // apply unspecified defaults to config
+    ps.config = Object.create(config||{});
+    for(var k in defaults) {
+        if(!ps.config[k]) {
+            ps.config[k] = defaults[k];
+        }
+    }
+
+    var cs = config.segments;
+
+    // setup segments default;
+    var pcs = ps.config.segments;
+    var defaultColors = defaults.segments.map(function(s){return s.color;}).reverse();
+    pcs.forEach(function(d,i){
         d.position = i;
-        if(!d.color) d.color = ds[i % ds.length ].color;
+        if(!d.color) {
+            d.color = defaultColors[ i % defaultColors.length ];
+        }
     });
 
-    ps.id = config.id || 'partitionSlider';
-    ps.root = ps.config.root ? ps.config.root : typeof ps.id == 'string' ? d3.select("#"+ps.id) : null;
     var cm = ps.config.margins;
+    ps.root = ps.config.root ||
+        typeof(ps.id) == 'string' ? d3.select("#"+ps.id) : (typeof(ps.selector) == 'string' ? d3.select(ps.selector) : null);
 
 
     ps.root = (ps.config.root && d3.select(ps.config.root)) ||
@@ -83,8 +98,8 @@ var PartitionSlider = function(config ){
         }
 
         var startPct = 0;
-        var segments = tray.selectAll("g.segment").data(ps.segments);
-        segments.exit().remove();
+        var segments = tray.selectAll("g.segment").data(ps.config.segments);
+        //segments.exit().remove();
         segments.enter().append("g").attr("class",function(s){return "segment segment-"+s.name+" segment-pos-"+s.position;})
             .attr("transform",function( s ){
                 var w = ps.xscale(s.pct);
@@ -133,7 +148,7 @@ var PartitionSlider = function(config ){
 
         var sliderSoFar = 0;
         var sliders = tray.selectAll("g.slider")
-                .data(ps.segments);
+                .data(ps.config.segments);
         sliders.exit().remove();
         sliders.enter()
             .append("g").attr("class",function(d){
@@ -167,26 +182,31 @@ var PartitionSlider = function(config ){
         console.log('adding drag handlers');
         var container = stage.select(".segments-tray");
         var dragStartPct = 0;
+        var pcs = ps.config.segments;
         stage.selectAll("g.segments-tray g.slider").call(
                 d3.drag()
                     .container(container.node())
                     .on("start",function(){
+                        console.log('drag started');
                         d3.event.sourceEvent.preventDefault();
                         d3.select(this).style("fill","red");
-                        console.log('drag started');
                         dragStartPct = ps.xscale.invert(d3.event.x);
                     })
                     .on("end",function(){
+                        console.log('drag ended');
                         d3.select(this).style("fill","white");
                     })
                     .on("drag",function(){
+                        var dragPct = ps.xscale.invert(d3.event.x);
                         var gSlider = d3.select(this),
                             d = d3.event.subject,
                             p = d.position;
                         gSlider.attr("transform",function(d){
                             return "translate("+d3.event.x+",0)";
                         });
-                        var h = ps.segments[d.position], l = ps.segments[d.position-1];
+
+                        // high and low segments
+                        var h = pcs[d.position], l = pcs[d.position-1];
 
                         var slidePct = ps.f2d( ps.xscale.invert(d3.event.x));
                         var hstartPct = h.startPct;
