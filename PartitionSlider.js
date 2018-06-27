@@ -1,9 +1,13 @@
-var PartitionSlider = function(config ){
+var PartitionSlider = function( config ){
 
     var ps = this;
     ps.pct = d3.format(".0%");
     ps.f2p = d3.format(".2");
     ps.f2d = function(d){return +ps.f2p(d);};
+    var fpct = ps.fpct = function(s){return ps.scale(s.pct);};
+    var vPixelHeight = ps.vPixelHeight = function(s){return ps.scale(1-s.pct);};
+    var fpctd2 = ps.fpctd2 = function(s){return ps.scale(s.pct)/2;}
+    var fcolor = ps.fcolor = function(s){return s.color;};
 
     // limits to tick multiples between 0 and 1 inclusive;
     ps.f2dt = function(d){
@@ -22,27 +26,30 @@ var PartitionSlider = function(config ){
             'rgba(79,155,255,0.5)',
             'rgba(0,177,0,0.65)'
         ],
+        vertical : false,
         segments : [
             {name:'D',pct:0.30,color:'rgba(255,0,0,0.7)'},
             {name:'C',pct:0.40,color:'rgba(250,105,0,0.7)'},
             {name:'B',pct:0.20,color:'rgba(79,155,255,0.5)'},
             {name:'A',pct:0.10,color:'rgba(0,177,0,0.65)'}
         ],
-        width:500,
-        height:100,
+        tray : {
+            width:500,
+            height:100
+        },
         segment : {
             height:50,
             format : function(d){return ps.pct(d.pct);}
         },
         margins : {
-            top:5,
+            top:15,
             right:14,
-            bottom:2,
+            bottom:15,
             left:14
         },
         tick : 0.05,
         x2Pct : function(){
-            var pct = ps.xscale.invert(d3.event.x);
+            var pct = ps.scale.invert(d3.event.x);
         }
     };
 
@@ -79,129 +86,185 @@ var PartitionSlider = function(config ){
     if(!ps.root) ps.root = d3.select("body");
 
     var initialize = function(){
+        var v = ps.config.vertical;
         // Create scale
-        var xscale = ps.xscale = d3.scaleLinear()
-            .domain([0,1])
-            .range([0, ps.config.width - cm.left - cm.right]);
+        var max, scale;
+        if(v) {
+            max = ps.config.height - cm.top - cm.bottom;
+            scale = ps.scale = d3.scaleLinear().domain([0,1]).range([max,0]);
+        } else {
+            max = ps.config.width - cm.left - cm.right;
+            scale = ps.scale = d3.scaleLinear().domain([0,1]).range([0, max]);
+        }
     };
 
     var drawAxis = function( root ){
-        var cm = ps.config.margins;
+        var axis, v = ps.config.vertical;
+        var gaxis = root.append("g")
+            gaxis.classed("axis",true);
 
         // Add scales to axis
-        var x_axis = ps.x_axis = d3.axisBottom().scale(ps.xscale);
-        x_axis.ticks(9);
-        x_axis.tickFormat(d3.format(".0%"));
+        if(v) {
+            axis = ps.axis = d3.axisRight().scale(ps.scale);
+            gaxis.attr("transform","translate("+(ps.config.segment.height+8)+",0)");
+        } else {
+            axis = ps.axis = d3.axisBottom().scale(ps.scale);
+            gaxis.attr("transform","translate(0,"+(ps.config.segment.height+8)+")");
+        }
+        axis.ticks(9);
+        axis.tickFormat(d3.format(".0%"));
 
         //Append group and insert axis
-        var gxasix = root.append("g").attr("transform","translate(0,"+(ps.config.height-cm.top-cm.bottom-20)+")");
-        gxasix.call(x_axis);
+        gaxis.call(axis);
     };
 
-    var updateSegments = function( root ) {
-        var tray = root.select("g.segments-tray");
-        if(tray.size()==0) {
-            tray = root.append("g")
-                .classed("segments-tray",true)
-            //    .attr("transform","translate(0,"+(ps.config.height/2)+")")
-            ;
-        }
 
-        var startPct = 0;
+    var createSegments = function( tray ) {
+        var v = ps.config.vertical, h = ps.config.segment.height;
+
         var segments = tray.selectAll("g.segment").data(ps.config.segments);
+
         //segments.exit().remove();
-        segments.enter().append("g").attr("class",function(s){return "segment segment-"+s.name+" segment-pos-"+s.position;})
-            .attr("transform",function( s ){
-                var w = ps.xscale(s.pct);
-                s.startPct = startPct;
-                startPct = startPct + s.pct;
-                return "translate("+ps.xscale(s.startPct)+",0)"
-            })
-                .append("rect")
-                    .attr("class",function(s){return "segment segment-"+s.name;})
-                    .attr("height",ps.config.segment.height)
-                    .attr("width",function(s){return ps.xscale(s.pct);})
-                    .style("fill",function(s){return s.color;})
+        segments = segments.enter()
+            .append("g").attr("class",function(s){return "segment segment-pos-"+s.position;});
+
+        segments.append("rect")
+            .style("fill",function(s){return s.color;})
+            .attr("class",function(s){return "segment segment-"+s.position;})
         ;
-        tray.selectAll("g.segment")
-            .append("g").classed("label",true)
-            .attr("transform",function(d){
-                var x =  ps.xscale(d.pct)/2;
-                var y =  ps.config.segment.height/2;
-                return "translate("+x+","+y+")";
-            })
-            .each(function(d){
-                var g = d3.select(this);
-                var t1 = g.append("text")
-                    .classed("pctLabel",true)
-                    .attr("dy",-ps.config.segment.height/6)
-                    .style("font-size","10px")
-                    .text(ps.config.segment.format);
-                var t2 = g.append("text")
-                    .attr("dy",ps.config.segment.height/4)
-                    .style("font-weight","bold")
-                    .style("font-size","12px")
-                    .text(function(d){return d.name;});
-                g.selectAll("text")
-                    .style("text-anchor","middle")
-                    .style("font-family","arial");
-            });
 
-        tray.selectAll("g.segment")
-            .append("text")
-            .style("font-size","10px")
-            .style("font-family","arial")
-            .style("text-anchor","start")
-            .attr("dy",ps.config.segment.height/2)
-            .attr("dx",function(s){return ps.xscale(s.pct)/2;})
-            .text();
+        segments.append("g").classed("label",true);
 
-        var sliderSoFar = 0;
-        var sliders = tray.selectAll("g.slider")
-                .data(ps.config.segments);
-        sliders.exit().remove();
-        sliders.enter()
-            .append("g").attr("class",function(d){
-                return "slider";
+        segments.selectAll("g.label")
+            .append("text").classed("pctLabel",true)
+            .style("font-size","9px")
+            .attr("dy",h/6)
+        ;
+
+        segments.selectAll("g.label").append("text")
+            .classed("nameLabel",true)
+            .style("font-weight","bold")
+            .style("font-size","11px")
+            .attr("dy",-h/10)
+            .text(function(d,i){return d.name;})
+        ;
+
+        segments.selectAll("g.label text")
+            .style("text-anchor","middle")
+            .style("font-family","arial");
+
+        var sliders = tray.selectAll("g.slider").data(ps.config.segments);
+        sliders = sliders.enter().append("g")
+            .attr("class",function(d,i){
+                return "slider slider-pos-"+d.position;
             })
-            .attr("transform",function(d){
-                var w =  ps.xscale(d.pct);
-                var y =  0; // ps.config.segment.height/2;
-                var x = sliderSoFar;
-                sliderSoFar+=w;
-                var r =  "translate("+x+","+y+")";
-                return r;
-            })
-            .append("rect")
-            .attr("height",ps.config.segment.height*1.2)
-            .attr("width",ps.config.segment.height/4)
-            .attr("x",-ps.config.segment.height/8)
-            .attr("y",-ps.config.segment.height*0.2/2)
+        ;
+        sliders.append("rect")
+            .attr("height",v ? h/4 : h*1.2)
+            .attr("width",v ? h*1.2 : h/4)
+            .attr("x",v ? -h*0.2/2 : -h/8)
+            .attr("y",v ? -h/8 : -h*0.2/2 )
             .attr("rx",5)
             .attr("ry",5)
             .style("stroke","#bbb")
             .style("stroke-width",1)
             .style("fill","white")
             .style("fill-opacity",0.6)
-            .style("cursor","ew-resize")
+            .style("cursor",v ? "ns-resize" : "ew-resize")
+
+
+
+    };
+
+    var updateSegmentsTray = function( tray ) {
+        var v = ps.config.vertical, h = ps.config.segment.height;
+
+        var startPct = 0;
+        var segments = tray.selectAll("g.segment");
+
+        //segments.exit().remove();
+        segments.attr("transform",function( d, i ){
+                var t = null;
+                d.startPct = startPct;
+                startPct = startPct + d.pct;
+                if(!v) {
+                    var startPix = ps.scale(d.startPct);
+                    t = "translate("+startPix+",0)";
+                } else {
+                    var sh = vPixelHeight(d,i);
+                    var startPix = ps.scale(d.startPct);
+                    t = "translate(0,"+(startPix-sh)+")";
+                }
+                return t;
+            });
+        segments.selectAll("rect")
+                .attr("height",function(d,i){
+                    var t = h;
+                    if(v) { t = vPixelHeight(d,i);}
+                    return t;
+                })
+                .attr("width", function(d,i){
+                    var w = h;
+                    if(!v) { w = fpct(d,i);}
+                    return w;
+                })
         ;
-        tray.select("g.slider").remove();
+
+        segments.selectAll("g.label")
+            .attr("transform",function(d,i){
+                var x,y;
+                if(!v) {
+                    x =  ps.scale(d.pct)/2;
+                    y =  h/2;
+                } else {
+                    x = h/2;
+                    y = vPixelHeight(d,i) /2
+                }
+                var t = "translate("+x+","+y+")";
+                return t;
+            })
+            .each(function(d){
+                var g = d3.select(this);
+
+                var pct =  g.select("text.pctLabel")
+                    .text(ps.config.segment.format);
+            });
+
+
+        var pctSoFar = 0;
+        var sliders = tray.selectAll("g.slider");
+        sliders.attr("transform",function(d,i){
+                var pctNow = pctSoFar;
+                pctSoFar+=d.pct;
+                var sliderPos = ps.scale(pctNow), x, y;
+                if(!v) {
+                    y = 0;
+                    x = sliderPos;
+                } else {
+                    x = 0;
+                    y = sliderPos;
+                }
+                var r =  "translate("+x+","+y+")";
+                return r;
+            })
+        ;
     };
 
     var addDragHandlers = function(stage) {
+        var v = ps.config.vertical, h = ps.config.segment.height;
         console.log('adding drag handlers');
-        var container = stage.select(".segments-tray");
+        var tray = stage.select("g.segments-tray");
         var dragStartPct = 0;
         var pcs = ps.config.segments;
-        container.selectAll("g.slider").call(
+        tray.selectAll("g.slider").call(
                 d3.drag()
-                    .container(container.node())
+                    .container(tray.node())
                     .on("start",function(){
                         var d = d3.event.subject;
                         console.log('drag started on slider '+d.position);
                         d3.event.sourceEvent.preventDefault();
                         d3.select(this).select("rect").style("fill","red");
-                        dragStartPct = ps.xscale.invert(d3.event.x);
+                        dragStartPct = ps.scale.invert(d3.event.x);
                     })
                     .on("end",function(){
                         console.log('drag ended');
@@ -215,45 +278,22 @@ var PartitionSlider = function(config ){
                         // high and low segments
                         var h = pcs[d.position], l = pcs[d.position-1];
 
-                        var slidePct = ps.f2dt( ps.xscale.invert(d3.event.x));
-
-
+                        var slidePct = ps.f2dt( ps.scale.invert(v ? d3.event.y : d3.event.x));
 
                         if(slidePct < l.startPct) {
                             slidePct = l.startPct;
                         } else if (slidePct > (h.startPct+h.pct) ) {
-                            slidePct = h.startPct
+                            slidePct = ps.f2dt( h.startPct+h.pct );
                         } else if (l.startPct == h.startPct ) {
 
                         }
+
                         var hstartPct = h.startPct;
                         var hdeltaPct = slidePct - hstartPct;
                         var hpctStartNew = ps.f2d( hstartPct + hdeltaPct );
                         var hpct = ps.f2dt( h.pct - hdeltaPct);
                         var lpct = ps.f2dt( hpctStartNew - l.startPct );
-
                         hpctStartNew = l.startPct + lpct;
-
-
-                        var hw = ps.xscale(hpct), // new pixel width of segment above slider
-                            lw = ps.xscale(lpct), // new pixel width of segment below slider
-                            hp = ps.xscale(hpctStartNew); // new position of segment above slider
-
-                        gSlider.attr("transform",function(d){
-                            return "translate("+ps.xscale(slidePct)+",0)";
-                        });
-
-                        var hg = container.select("g.segment-pos-"+p)
-                            .attr("transform","translate("+hp+",0)");
-                        hg.select("rect.segment").attr("width",hw);
-                        hg.select("g.label").attr("transform","translate("+hw/2+","+ps.config.segment.height/2+")");
-                        hg.select("text.pctLabel").text(ps.pct(hpct));
-
-
-                        var lg = container.select("g.segment-pos-"+(p-1));
-                        lg.select("rect.segment").attr("width",lw);
-                        lg.select("g.label").attr("transform","translate("+lw/2+","+ps.config.segment.height/2+")");
-                        lg.select("text.pctLabel").text(ps.pct(lpct));
 
                         h.pct = hpct;
                         h.weight = h.pct;
@@ -261,16 +301,11 @@ var PartitionSlider = function(config ){
                         l.pct = lpct;
                         l.weight = l.pct;
 
+                        updateSegmentsTray( tray );
                     })
         );
     };
 
-    var addRankDriverToMetric = function( stage ) {
-        stage.selectAll("g.segment rect").on("click",function(d,i){
-            console.log('Rect Click: '+d.name)
-        })
-
-    };
 
 
     if(ps.root) {
@@ -278,17 +313,32 @@ var PartitionSlider = function(config ){
         var bcr = ps.root.node().getBoundingClientRect();
         // Append SVG
         var svg = ps.svg = ps.root
-            .append("svg")
-            .attr("width", ps.config.width)
-            .attr("height", ps.config.height);
+            .append("svg");
+        var w = ps.config.width = ps.config.width || bcr.width;
+        var h = ps.config.height = ps.config.height || bcr.height;
+
+        svg.style("left", 0+"px").style("top", 0+"px");
+        svg.style("width", w+"px" )
+            .style("height", h +"px");
+
+        var transform = "translate("+cm.left+","+cm.top+")";
         var stage = ps.stage = svg.append("g")
-            .classed("stage",true)
-            .attr("transform","translate("+cm.left+","+cm.top+")");
+            .classed("stage",true).attr("transform",transform);
+
+        var tray = stage.select("g.segments-tray");
+        if(tray.size()==0) {
+            tray = stage.append("g").classed("segments-tray",true);
+            //if(v) tray.attr("transform","rotate(90,0,"+ps.config.segment.height+")");
+        }
+
 
         initialize();
         drawAxis( stage );
-        updateSegments( stage );
-        addRankDriverToMetric( stage )
+        createSegments( tray );
+        tray.select("g.slider").attr("display","none"); // remove the first slider (at 0%)
+
+        updateSegmentsTray( tray );
+
 
         addDragHandlers( stage );
 
