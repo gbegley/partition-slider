@@ -232,7 +232,7 @@ var PartitionSlider = function( config ){
 
 
         var pctSoFar = 0;
-        var sliders = tray.selectAll("g.slider");
+        var sliders = tray.selectAll("g.slider").data(pcs);
         sliders.attr("transform",function(d,i){
                 var pctNow = pctSoFar;
                 pctSoFar+=d.pct;
@@ -248,6 +248,9 @@ var PartitionSlider = function( config ){
                 return r;
             })
         ;
+
+        segments.attr("display",function(d,i){return d.pct<=0 ? "none":"";});
+
     };
 
     var addDragHandlers = function(stage) {

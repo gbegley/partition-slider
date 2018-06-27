@@ -9,34 +9,70 @@
   shape-rendering: crispEdges;
 }
 
-
-.title {
-    font-family: "Roboto", sans-serif;
-}
-.profile.title { margin-left:15px; }
-
-.metric-groups-partition { padding-bottom: 28px;}
-
-
-/*
- * align text with a tick
- */
 rect.segment {
     fill : orange;
     fill-opacity: 0.6;
-    /*stroke: ;*/
 }
+
 
 .tick text{
-    text-anchor: middle; /* or start or end */
+    /*text-anchor: middle; !* align text with a tick, or start or end *!*/
 }
 
-/*g.slider rect {cursor:ew-resize;}*/
 
-.metric-group h2 {
-    margin-left: 1em;
+
+.profile-groups.partition {
+    height:100px;
+}
+
+.metric-groups-set {
+    border:1px solid darkgray;
+    height : 500px;
+    padding:8px;
+    display: flex;
+    flex-direction: row;
+}
+
+.metric-groups {
+    height: 100%;
+    align-self: stretch;
+    flex-grow: 1;
+    display:flex;
+    flex-direction: column;
+    flex: 1;
+}
+.partition {
+    height: 100%;
+    border:1px solid red;
+    align-self: stretch;
+}
+.metric-ranks.partition {
+    width:300px;
+    /*order:10;*/
+}
+
+.metric-group {
+    flex: 1;
+    align-self: stretch;
+    display:flex;
+    flex-direction: column;
+}
+
+
+
+
+
+
+
+.title {
+    font-family: "Roboto", sans-serif;
+    font-weight: bold;
+    margin-left: 0.5em;
+    padding: 5px 0;
+}
+.profile.title { margin-left:15px; }
+.metric-group .metric-group-title {
+    margin-left: 0.5em;
+    padding: 4px;
     font: bold 18px "Palatino Linotype";
 }
-
-
-

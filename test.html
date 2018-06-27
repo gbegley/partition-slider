@@ -1,136 +1,60 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <style>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Flex</title>
+    <script src="d3.v4.js"></script>
+    <script src="PartitionSlider.js"></script>
+    <link rel="stylesheet" type="text/css" href="partitioning.css">
 
-        /*
-         * use crispEdges for a sharper looking axis
-         * since these are vertical/horizontal lines
-         * /
-        .axis line, .axis path{
-          fill: none;
-          stroke: #000;
-          shape-rendering: crispEdges;
-        }
-
-        /*
-         * align text with a tick
-         */
-        rect.segment {
-            fill : orange;
-            fill-opacity: 0.6;
-            stroke: ;
-        }
-
-        .tick text{
-            text-anchor: middle; /* or start or end */
-        }
-
-        /*g.slider rect {cursor:ew-resize;}*/
-
-    </style>
 </head>
 <body>
-<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
-<script src="d3.v4.js"></script>
-<script src="PartitionSlider.js"></script>
 
+<div class="profile">
+    <h1>Flexing Muscle</h1>
+    <div class="metric-groups-set">
+        <div class="metric-groups">
+            <div class="metric-group"></div>
+            <div class="metric-group"></div>
+            <div class="metric-group"></div>
+        </div>
+        <div class="metric-ranks partition">
 
+        </div>
+    </div>
+</div>
 
-
+</body>
 <script>
+    var mgSliders = [], mrpSlider = null;
 
-    var profile =  {
-        "id" : "default",
-        "name" : "Default Customer Ranking Profile",
-        "groupingField":"CUST_GROUP1",
-        "rankThresholds" : {
-            "A":32.5,
-            "B":25,
-            "C":17.6,
-            "D":0
-        },
-        "metricGroups" : [
-            {
-                "id":"buyingPower",
-                "name":"Buying Power",
-                "weight" : 0.5,
-                "metrics" : [
-                    {"id":"salesRevenue","weight":0.45},
-                    {"id":"uniqueItems","weight":0.2},
-                    {"id":"uniqueOrders","weight":0.35}
-                ]
-            },{
-                "id":"profitability",
-                "name":"Profitability",
-                "weight" : 0.25,
-                "metrics" : [
-                    {"id":"salesRevenue","weight":0.45},
-                    {"id":"uniqueItems","weight":0.2},
-                    {"id":"uniqueOrders","weight":0.35}
-                ]
-            },{
-                "id":"costToServe",
-                "name":"Cost to Serve",
-                "weight" : 0.25,
-                "metrics" : [
-                    {"id":"salesRevenue","weight":0.45},
-                    {"id":"uniqueItems","weight":0.2},
-                    {"id":"uniqueOrders","weight":0.35}
-                ]
-            }
-        ]
-    };
+    d3.selectAll(".metric-group").each(function(s,mgi){
+        var mg = d3.select(this);
+        var mgSlider = mgSliders[mgi] = new PartitionSlider({root:mg.node()});
 
-
-    //var dataSelection = d3.select("body").selectAll("p").data([1, 2, 3, 4]);
-
-
-
-    var profiles = [profile];
-
-    var weightToPctMapper = function(d){d.pct = d.weight;return d;};
-
-    var body = d3.select("body");
-    var profileSelection = body.selectAll("div.profile");
-    profileSelection.data(profiles);
-    profileSelection.enter().append("div")
-            // .attr("class",function(d){return "profile profile-"+d.id})
+    });
+    d3.selectAll(".metric-ranks.partition").each(function(s){
+        var mrp = d3.select(this);
+        var rect = mrp.node().getBoundingClientRect();
+        mrp.style("width", rect.width + "px")
+           .style("height", rect.height + "px")
+           .style("position", "relative")
         ;
-
-    //var groupsWeightings = profileSelection.append("div").classed("metric-group-weights",true);
-
-/*
-    var metricGroupSelection = profileSelection.selectAll(".metric-group").data(function(d){return d.metricGroups;})
-            .enter().append("div").attr("class",function(d){return "metric-group metric-group-"+d.id;})
-                // .selectAll(".metric").data(function(d){return d.metrics;})
-                //     .enter().append("div").attr("class",function(d){return "metric metric-"+d.id;})
-    ;
-
-
-    var profileUpdate = profileSelection = body.selectAll(".profile");
-    var metricGroupsUpdate = profileUpdate.classed("update",true).selectAll(".metric-group").classed("update",true);
-
-    var metricUpdate = metricGroupsUpdate.selectAll(".metric");
-    metricUpdate.classed("update",true).each(function(d,i){
-        console.log("update slider "+d.id);
-        var m = d3.select(this);
-        m.attr("id","metric-"+d.id);
-        var p = new PartitionSlider({id:"metric-"+d.id});
+        mrpSlider = new PartitionSlider({
+            root:mrp.node(),
+            tick:0.1,
+            vertical:true
+        });
+        // mrp.selectAll("svg").each(function(d,i){
+        //     var svg = d3.select(this);
+        //     // TODO set translate to get the cookie bar batch
+        //     svg.attr("transform","rotate(270)")
+        //         .select("g.stage").attr("transform", "translate(-300,0)")
+        // })
     });
-*/
-
-
-
-/*
-    var p = new PartitionSlider( {
-        id:'myPartition'
-    });
-*/
-
-
 
 </script>
-</body>
 </html>
