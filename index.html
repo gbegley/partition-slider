@@ -4,7 +4,23 @@
     <meta charset="utf-8">
     <script src="d3.v4.js"></script>
     <script src="PartitionSlider.js"></script>
-    <link rel="stylesheet" type="text/css" href="partitioning.css">
+    <!--<link rel="stylesheet" type="text/css" href="partitioning.css">-->
+    <style>
+        .title {font-family: Roboto; font-weight: bold; font-size: 14px; padding:0.6em;}
+        .profile-title .title {font-size: 22px;padding: 8px;}
+
+        .metric-groups-partition {height:100px;}
+        .metric-groups-set {height:600px;align-items:stretch;display:flex;flex-direction: row;}
+        .metric-groups {display:flex;flex:1;flex-direction: column; order:-1;}
+        .metric-group {display:flex;flex-direction:column;flex:1;}
+        .metric-ranks {display:flex;flex-direction:column;flex-basis:200px;}
+        .partition {
+            border: 1px solid #BBDEFB; flex:1; margin:0 0.5em; display:flex;align-items: center;
+        }
+
+        fill-opacity: 0.6;
+    </style>
+
 </head>
 <body>
 <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
@@ -18,12 +34,12 @@
         "id" : "default",
         "name" : "Default Customer Ranking Profile",
         "groupingField":"CUST_GROUP1",
-        "rankThresholds" : {
-            "A":32.5,
-            "B":25,
-            "C":17.6,
-            "D":0
-        },
+        "defaultRanks" : [
+            {"name":"A",pct:0.15},
+            {"name":"B",pct:0.25},
+            {"name":"C",pct:0.40},
+            {"name":"D",pct:0.20}
+        ],
         "metricGroups": [
             {
                 "id": "buyingPower",
@@ -94,41 +110,59 @@
     };
 
 
-
-    var weightToPctMapper = function(d){d.pct = d.weight;if(!d.name) d.name=d.id;return d;};
+(function(){
+    var weightToPctMapper = function(d){
+        if(!d.pct) d.pct = d.weight;
+        if(!d.name) d.name=d.id;
+        return d;
+    };
+    var createSlider = function(selection,segments,v) {
+        var conf = {root:selection.node()};
+        if(segments) {
+            var segs = segments.map(weightToPctMapper);
+            conf.segments = segs;
+        }
+        if(v) conf.vertical = v;
+        var ps = new PartitionSlider(conf);
+        return ps;
+    };
+    var actdiv = function(sel,cls,t) {
+        var s = sel.append("div");
+        s.attr("class",cls);
+        if(t) s.text(t);
+        return s;
+    };
+    var actTitle = function(sel,cls,t){
+        var s = actdiv(sel,cls);
+        var ts = actdiv(s,"title",t);
+    };
 
     var body = d3.select("body");
+    var pd = actdiv(body,"profile");
+    actTitle(pd,"profile-title",profile.name);
+    var metricGroupsPartition = actdiv(pd,"metric-groups-partition partition");
+    createSlider(metricGroupsPartition,profile.metricGroups);
 
 
-    var profileSelection = body.selectAll("p").data([profile]).enter().append("p")
-        .attr("class","profile")
-        .attr("id", function(d) { return "profile_"+d.id; })
+    var metricGroupsSet = actdiv(pd,"metric-groups-set");
+    var metricRanks = actdiv(metricGroupsSet,"metric-ranks");
+    actTitle(metricRanks,"metric-ranks-title","Metric Ranks");
+    var metricRanksPartition = actdiv(metricRanks,"metric-ranks-partition partition");
+    createSlider(metricRanksPartition,null,true);
+
+    var metricGroups = actdiv(metricGroupsSet,"metric-groups");
+    metricGroups.selectAll(".metric-group").data(profile.metricGroups).enter()
+        .append("div").classed("metric-group",true)
+        .each(function(d,mgi){
+            var mg = d3.select(this);
+            actTitle(mg,"metric-group-title group-title",d.name);
+            var mgp = actdiv(mg,"metric-group-partition partition");
+            createSlider(mgp,d.metrics);
+        })
     ;
-    profileSelection.append("h1").attr("class","profile title").text(function(d,i){return d.name;});
-    var groupWeights = profile.metricGroups.map(weightToPctMapper);
-    var mgp = profileSelection.append("div").attr("class","metric-groups-partition");
-    var psMGP = new PartitionSlider({root:mgp.node(),segments:groupWeights,width:800,height:100});
 
 
-    var metricGroups = profileSelection.append("div").attr("class","metric-groups");
-     metricGroups.selectAll("div.metric-group")
-         .data(profile.metricGroups.map(weightToPctMapper)).enter()
-         .append("div").attr("class","metric-group")
-         .each(function(d,i){
-             var mg = d3.select(this);
-             mg.append("h2").attr("class","metric-group title").text(d.name);
-             var mgp = mg.append("div").attr("class","metric-group.partition");
-             var metricWeights = d.metrics.map(weightToPctMapper);
-             var psMGP = new PartitionSlider({root:mgp.node(),segments:metricWeights,width:800,height:85});
-         })
-     ;
-
-     var button = body.append("div").append("button").text("Log it");
-     button.on("click",function(d){
-         console.log('Profile: ',profile);
-     });
-
-
+})();
 
 </script>
 </body>

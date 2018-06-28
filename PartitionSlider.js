@@ -42,10 +42,10 @@ var PartitionSlider = function( config ){
             format : function(d){return ps.pct(d.pct);}
         },
         margins : {
-            top:15,
-            right:14,
+            top:20,
+            right:20,
             bottom:15,
-            left:14
+            left:20
         },
         tick : 0.05,
         x2Pct : function(){
@@ -287,8 +287,13 @@ var PartitionSlider = function( config ){
                             slidePct = l.startPct;
                         } else if (slidePct > (h.startPct+h.pct) ) {
                             slidePct = ps.f2dt( h.startPct+h.pct );
-                        } else if (l.startPct == h.startPct ) {
-
+                        } else if (l.pct==0 && h.pct==0) {
+                            var asp = l;
+                            while(asp.pct==0) asp = pcs[asp.position-1];
+                            l = asp; h = pcs[asp.position+1];
+                            l.pct -= ps.config.tick;
+                            h.pct = ps.config.tick;
+                            slidePct = h.startPct = l.startPct + l.pct;
                         }
 
                         var hstartPct = h.startPct;
