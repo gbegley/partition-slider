@@ -13,6 +13,7 @@
 </head>
 <body>
 
+<!--
 <div class="profile">
     <h1>Flexing Muscle</h1>
     <div class="metric-groups-set">
@@ -25,35 +26,31 @@
 
         </div>
     </div>
+-->
 </div>
 
 </body>
 <script>
     var mgSliders = [], mrpSlider = null;
 
-    d3.selectAll(".metric-group").each(function(s,mgi){
-        var mg = d3.select(this);
-        var mgSlider = mgSliders[mgi] = new PartitionSlider({root:mg.node()});
+    var body = d3.select("body");
+    var profile = body.append("div").classed("profile",true);
+    var mgSeg = profile.append("div").classed("metric-group-set",true);
+    var mgs = mgSeg.append("div").classed("metric-groups",true);
+    var mrp = mgSeg.append("div").attr("class","metric-ranks partition");
 
-    });
-    d3.selectAll(".metric-ranks.partition").each(function(s){
-        var mrp = d3.select(this);
-        var rect = mrp.node().getBoundingClientRect();
-        mrp.style("width", rect.width + "px")
-           .style("height", rect.height + "px")
-           .style("position", "relative")
-        ;
-        mrpSlider = new PartitionSlider({
-            root:mrp.node(),
-            tick:0.1,
-            vertical:true
-        });
-        // mrp.selectAll("svg").each(function(d,i){
-        //     var svg = d3.select(this);
-        //     // TODO set translate to get the cookie bar batch
-        //     svg.attr("transform","rotate(270)")
-        //         .select("g.stage").attr("transform", "translate(-300,0)")
-        // })
+    var mgs = mgs.selectAll(".metric-group").data([1,2,3]).enter()
+        .append("div").classed("metric-group",true)
+        .each(function(s,mgi){
+            var mg = d3.select(this);
+            var mgSlider = mgSliders[mgi] = new PartitionSlider({root:mg.node()});
+        })
+    ;
+
+    var mrpSlider = new PartitionSlider({
+        root:mrp.node(),
+        tick:0.1,
+        vertical:true
     });
 
 </script>

@@ -1,6 +1,6 @@
 {
   "id" : "default",
-  "name" : "Default Customer Ranking Profile",
+  "name" : "Customizable Ranking Profile",
   "groupingField":"CUST_GROUP1",
   "defaultRanks" : [
 	{"name":"A","pct":0.15},

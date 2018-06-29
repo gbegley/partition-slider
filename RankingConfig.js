@@ -76,9 +76,9 @@ var RankingConfig = function( profile ){
 
         var metricGroupsSet = actdiv(pd,"metric-groups-set");
         var metricRanks = actdiv(metricGroupsSet,"metric-ranks");
-        var mrt = actTitle(metricRanks,"metric-ranks-title","Metric Ranks",["save","close"]);
+        var mrt = actTitle(metricRanks,"metric-ranks-title","Metric Ranks");
         var metricRanksPartition = actdiv(metricRanks,"metric-ranks-partition partition");
-        metricRanks.select(".fa.fa-close").on("click",function(){metricRanks.style("visibility","hidden")});
+        // metricRanks.select(".fa.fa-close").on("click",function(){metricRanks.style("visibility","hidden")});
 
         var metricGroups = actdiv(metricGroupsSet,"metric-groups");
         metricGroups.selectAll(".metric-group").data(profile.metricGroups).enter()
@@ -90,6 +90,7 @@ var RankingConfig = function( profile ){
                 createSlider({root:mgp,segments:d.metrics,segment:{height:true}});
 
                 mg.selectAll("g.segment rect").on("click",function(d,i){
+                    var rect = d3.select(this);
                     console.log("segment clicked");
                     d.ranks = d.ranks || ranksCopy(profile.defaultRanks.slice(0).reverse());
                     metricRanks.datum(d);
@@ -103,7 +104,9 @@ var RankingConfig = function( profile ){
                     ;
                     actdiv(tc,"sub",d.name);
 
-                    createSlider({
+                    metricGroupsSet.selectAll("g.segment rect").classed("on",false);
+                    rect.classed("on",true);
+                    var s = createSlider({
                         root:metricRanks.select(".metric-ranks-partition"),
                         segments:d.ranks,
                         vertical:true,
