@@ -163,14 +163,14 @@ var PartitionSlider = function( config ){
         segments.selectAll("g.label")
             .append("text").classed("pctLabel",true)
             .style("font-size","9px")
-            .attr("dy",h/6)
+            .attr("dy",8)
         ;
 
         segments.selectAll("g.label").append("text")
             .classed("nameLabel",true)
             .style("font-weight","bold")
             .style("font-size","11px")
-            .attr("dy",-h/10)
+            .attr("dy",-5)
             .text(function(d,i){return d.name;})
         ;
 

@@ -3,6 +3,14 @@ var RankingConfig = function( profile ){
     var me = this;
     me.profile= profile;
 
+    var rankColors = [
+        'rgba(255,0,0,0.7)',
+        'rgba(250,105,0,0.7)',
+        'rgba(79,155,255,0.5)',
+        'rgba(0,177,0,0.65)'
+    ];
+
+
     var weightToPctMapper = function(d){
         if(!d.pct) d.pct = d.weight;
         if(!d.name) d.name=d.id;
@@ -95,7 +103,15 @@ var RankingConfig = function( profile ){
                     ;
                     actdiv(tc,"sub",d.name);
 
-                    createSlider({root:metricRanks.select(".metric-ranks-partition"),segments:d.ranks,vertical:true,segment:{height:true}});
+                    createSlider({
+                        root:metricRanks.select(".metric-ranks-partition"),
+                        segments:d.ranks,
+                        vertical:true,
+                        segment:{
+                            height:true,
+                            colors : rankColors
+                        }
+                    });
 
                 })
             })
