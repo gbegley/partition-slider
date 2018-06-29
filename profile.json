@@ -1,0 +1,78 @@
+{
+  "id" : "default",
+  "name" : "Default Customer Ranking Profile",
+  "groupingField":"CUST_GROUP1",
+  "defaultRanks" : [
+	{"name":"A","pct":0.15},
+	{"name":"B","pct":0.25},
+	{"name":"C","pct":0.40},
+	{"name":"D","pct":0.20}
+  ],
+  "metricGroups": [
+	{
+	  "id": "buyingPower",
+	  "name": "Buying Power",
+	  "weight": 0.4,
+	  "metrics": [
+		{
+		  "id": "salesRevenue",
+		  "name" : "Sales Revenue",
+		  "weight": 0.45
+		},
+		{
+		  "id": "uniqueItems",
+		  "name" : "Unique Items",
+		  "weight": 0.2
+		},
+		{
+		  "id": "uniqueOrders",
+		  "name": "Unique Orders",
+		  "weight": 0.35
+		}
+	  ]
+	},
+	{
+	  "id": "profitability",
+	  "name": "Profitability",
+	  "weight": 0.2,
+	  "metrics": [
+		{
+		  "id": "marginDollars",
+		  "name": "Margin Dollars",
+		  "weight": 0.40
+		},
+		{
+		  "id": "gppMetric",
+		  "name": "Gross Profit Percentage",
+		  "weight": 0.40
+		},
+		{
+		  "id": "avgOrderSizeMetric",
+		  "name": "Average Order Size",
+		  "weight": 0.20
+		}
+	  ]
+	},
+	{
+	  "id": "costToServe",
+	  "name": "Cost to Serve",
+	  "weight": 0.4,
+	  "metrics": [
+		{
+		  "id": "avgLineItems",
+		  "name": "Average Lines Items",
+		  "weight": 1
+		},
+		{
+		  "id": "daysToPay",
+		  "name": "Days to Pay",
+		  "weight": 0
+		},
+		{
+		  "id": "pctReturnLines",
+		  "weight": 0
+		}
+	  ]
+	}
+  ]
+}

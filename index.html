@@ -4,165 +4,42 @@
     <meta charset="utf-8">
     <script src="d3.v4.js"></script>
     <script src="PartitionSlider.js"></script>
-    <!--<link rel="stylesheet" type="text/css" href="partitioning.css">-->
+    <script src="RankingConfig.js"></script>
+    <link rel="stylesheet" type="text/css" href="partitioning.css">
+    <script src="https://use.fontawesome.com/9a600d5e3b.js"></script>
     <style>
-        .title {font-family: Roboto; font-weight: bold; font-size: 14px; padding:0.6em;}
-        .profile-title .title {font-size: 22px;padding: 8px;}
-
-        .metric-groups-partition {height:100px;}
-        .metric-groups-set {height:600px;align-items:stretch;display:flex;flex-direction: row;}
-        .metric-groups {display:flex;flex:1;flex-direction: column; order:-1;}
-        .metric-group {display:flex;flex-direction:column;flex:1;}
-        .metric-ranks {display:flex;flex-direction:column;flex-basis:200px;}
-        .partition {
-            border: 1px solid #BBDEFB; flex:1; margin:0 0.5em; display:flex;align-items: center;
-        }
-
-        fill-opacity: 0.6;
+        #profileAction button {margin:10px;float:right;}
     </style>
-
 </head>
 <body>
-<!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
-
-
+<div id="profileAction"></div>
+<div id="profileEditor"></div>
 
 
 <script>
 
-    var profile =  {
-        "id" : "default",
-        "name" : "Default Customer Ranking Profile",
-        "groupingField":"CUST_GROUP1",
-        "defaultRanks" : [
-            {"name":"A",pct:0.15},
-            {"name":"B",pct:0.25},
-            {"name":"C",pct:0.40},
-            {"name":"D",pct:0.20}
-        ],
-        "metricGroups": [
-            {
-                "id": "buyingPower",
-                "name": "Buying Power",
-                "weight": 0.5,
-                "metrics": [
-                    {
-                        "id": "salesRevenue",
-                        "name" : "Sales Revenue",
-                        "weight": 0.45
-                    },
-                    {
-                        "id": "uniqueItems",
-                        "name" : "Unique Items",
-                        "weight": 0.2
-                    },
-                    {
-                        "id": "uniqueOrders",
-                        "name": "Unique Orders",
-                        "weight": 0.35
-                    }
-                ]
-            },
-            {
-                "id": "profitability",
-                "name": "Profitability",
-                "weight": 0.2,
-                "metrics": [
-                    {
-                        "id": "marginDollars",
-                        "name": "Margin Dollars",
-                        "weight": 0.40
-                    },
-                    {
-                        "id": "gppMetric",
-                        "name": "Gross Profit Percentage",
-                        "weight": 0.40
-                    },
-                    {
-                        "id": "avgOrderSizeMetric",
-                        "name": "Average Order Size",
-                        "weight": 0.20
-                    }
-                ]
-            },
-            {
-                "id": "costToServe",
-                "name": "Cost to Serve",
-                "weight": 0.3,
-                "metrics": [
-                    {
-                        "id": "avgLineItems",
-                        "name": "Average Lines Items",
-                        "weight": 1
-                    },
-                    {
-                        "id": "daysToPay",
-                        "name": "Days to Pay",
-                        "weight": 0
-                    },
-                    {
-                        "id": "pctReturnLines",
-                        "weight": 0
-                    }
-                ]
-            }
-        ]
+    var profileAction = d3.select("#profileAction");
+    var btnReload = profileAction.append("button").text("Reload");
+    var btnShow = profileAction.append("button").text("Show Me");
+
+    var rankingConfig = new RankingConfig({});
+
+    var reload = function(){
+        d3.json("profile.json",function(errors,profile){
+            d3.select("#profileEditor").selectAll("*").remove();
+            rankingConfig.appendTo("#profileEditor",profile);
+        });
     };
 
 
-(function(){
-    var weightToPctMapper = function(d){
-        if(!d.pct) d.pct = d.weight;
-        if(!d.name) d.name=d.id;
-        return d;
-    };
-    var createSlider = function(selection,segments,v) {
-        var conf = {root:selection.node()};
-        if(segments) {
-            var segs = segments.map(weightToPctMapper);
-            conf.segments = segs;
-        }
-        if(v) conf.vertical = v;
-        var ps = new PartitionSlider(conf);
-        return ps;
-    };
-    var actdiv = function(sel,cls,t) {
-        var s = sel.append("div");
-        s.attr("class",cls);
-        if(t) s.text(t);
-        return s;
-    };
-    var actTitle = function(sel,cls,t){
-        var s = actdiv(sel,cls);
-        var ts = actdiv(s,"title",t);
-    };
 
-    var body = d3.select("body");
-    var pd = actdiv(body,"profile");
-    actTitle(pd,"profile-title",profile.name);
-    var metricGroupsPartition = actdiv(pd,"metric-groups-partition partition");
-    createSlider(metricGroupsPartition,profile.metricGroups);
-
-
-    var metricGroupsSet = actdiv(pd,"metric-groups-set");
-    var metricRanks = actdiv(metricGroupsSet,"metric-ranks");
-    actTitle(metricRanks,"metric-ranks-title","Metric Ranks");
-    var metricRanksPartition = actdiv(metricRanks,"metric-ranks-partition partition");
-    createSlider(metricRanksPartition,null,true);
-
-    var metricGroups = actdiv(metricGroupsSet,"metric-groups");
-    metricGroups.selectAll(".metric-group").data(profile.metricGroups).enter()
-        .append("div").classed("metric-group",true)
-        .each(function(d,mgi){
-            var mg = d3.select(this);
-            actTitle(mg,"metric-group-title group-title",d.name);
-            var mgp = actdiv(mg,"metric-group-partition partition");
-            createSlider(mgp,d.metrics);
-        })
-    ;
-
-
-})();
+    btnReload.on("click",function(){
+        reload();
+    });
+    btnShow.on("click",function(){
+        console.log("Profile: ",rankingConfig.profile);
+    });
+    reload();
 
 </script>
 </body>

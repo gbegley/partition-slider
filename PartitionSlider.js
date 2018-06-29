@@ -19,7 +19,8 @@ var PartitionSlider = function( config ){
         return +ps.f2p(x);
     };
 
-    var defaults = {
+
+    var defaults = ps.defaults = {
         colors : [
             'rgba(255,0,0,0.7)',
             'rgba(250,105,0,0.7)',
@@ -53,35 +54,59 @@ var PartitionSlider = function( config ){
         }
     };
 
-
-    // apply unspecified defaults to config
+/*
+    var copyTo = function(source,dest) {
+        var o = Object.create(dest||{});
+        for(var k in source) {
+            if(!o[k]) {
+                o[k] = source[k];
+            } else if(typeof o[k]=='object') {
+                o[k] = copyTo(source[k],o[k]);
+            }
+        }
+        return o;
+    };
+*/
     ps.config = Object.create(config||{});
     for(var k in defaults) {
         if(!ps.config[k]) {
             ps.config[k] = defaults[k];
         }
     }
+    if(config.segment) {
+        for(var k in defaults.segment) {
+            if(!ps.config.segment[k]) {
+                ps.config.segment[k] = defaults.segment[k];
+            }
+        }
+    }
 
-    var cs = config.segments;
+    // ps.config = copyTo(defaults,config);
+
+    var cs = ps.config.segments;
 
     // setup segments default;
     var pcs = ps.config.segments;
-    var defaultColors = defaults.segments.map(function(s){return s.color;}).reverse();
+    var colors = ps.config.segment.colors;
+    if(!colors) {
+        colors = ps.config.segment.colors = defaults.segments.map(function(s){return s.color;}).reverse();
+    }
     pcs.forEach(function(d,i){
         d.position = i;
         if(!d.color) {
-            d.color = defaultColors[ i % defaultColors.length ];
+            d.color = colors[ i % colors.length ];
         }
     });
 
     var cm = ps.config.margins;
     ps.root = ps.config.root ||
-        typeof(ps.id) == 'string' ? d3.select("#"+ps.id) : (typeof(ps.selector) == 'string' ? d3.select(ps.selector) : null);
+        (typeof(ps.config.id) == 'string' ? d3.select("#"+ps.config.id) :
+        (typeof(ps.config.selector) == 'string' ? d3.select(ps.config.selector) : null));
 
 
-    ps.root = (ps.config.root && d3.select(ps.config.root)) ||
-        ps.config.selector && d3.select(ps.config.selector) ||
-        ps.config.id && d3.select("#"+ps.config.id);
+    // ps.root = (ps.config.root && d3.select(ps.config.root)) ||
+    //     ps.config.selector && d3.select(ps.config.selector) ||
+    //     ps.config.id && d3.select("#"+ps.config.id);
 
     if(!ps.root) ps.root = d3.select("body");
 
@@ -99,17 +124,17 @@ var PartitionSlider = function( config ){
     };
 
     var drawAxis = function( root ){
-        var axis, v = ps.config.vertical;
+        var axis, v = ps.config.vertical, h = ps.config.segment.height;
         var gaxis = root.append("g")
             gaxis.classed("axis",true);
 
         // Add scales to axis
         if(v) {
             axis = ps.axis = d3.axisRight().scale(ps.scale);
-            gaxis.attr("transform","translate("+(ps.config.segment.height+8)+",0)");
+            gaxis.attr("transform","translate("+(h*1.2)+",0)");
         } else {
             axis = ps.axis = d3.axisBottom().scale(ps.scale);
-            gaxis.attr("transform","translate(0,"+(ps.config.segment.height+8)+")");
+            gaxis.attr("transform","translate(0,"+(h*1.2)+")");
         }
         axis.ticks(9);
         axis.tickFormat(d3.format(".0%"));
@@ -159,11 +184,22 @@ var PartitionSlider = function( config ){
                 return "slider slider-pos-"+d.position;
             })
         ;
+
+        var extend_size = Math.min(h*0.2,8);
+        var sliderHeight = h+2*extend_size;
+        var sliderWidth = Math.min(h/4,14);
+        var rect = {
+            w : (v ? sliderHeight : sliderWidth),
+            h : (v ? sliderWidth : sliderHeight),
+            x : (v ? -extend_size : -sliderWidth/2),
+            y : (v ? -sliderWidth/2 : -extend_size)
+        };
+
         sliders.append("rect")
-            .attr("height",v ? h/4 : h*1.2)
-            .attr("width",v ? h*1.2 : h/4)
-            .attr("x",v ? -h*0.2/2 : -h/8)
-            .attr("y",v ? -h/8 : -h*0.2/2 )
+            .attr("width",rect.w)
+            .attr("height",rect.h)
+            .attr("x",rect.x)
+            .attr("y", rect.y )
             .attr("rx",5)
             .attr("ry",5)
             .style("stroke","#bbb")
@@ -324,6 +360,13 @@ var PartitionSlider = function( config ){
             .append("svg");
         var w = ps.config.width = ps.config.width || bcr.width;
         var h = ps.config.height = ps.config.height || bcr.height;
+        var v = ps.config.vertical;
+        var csh = ps.config.segment.height;
+
+        if(typeof csh=='boolean') {
+            csh = (v ? (w - cm.left - cm.right) : (h-cm.top-cm.bottom))*0.7;
+            ps.config.segment.height = csh;
+        }
 
         svg.style("left", 0+"px").style("top", 0+"px");
         svg.style("width", w+"px" )
