@@ -70,8 +70,6 @@ var RankingConfig = function( profile ){
 
         var pd = actdiv(sroot,"profile");
         actTitle(pd,"profile-title",profile.name,tools);
-        var metricGroupsPartition = actdiv(pd,"metric-groups-partition partition");
-        createSlider({root:metricGroupsPartition,segments:profile.metricGroups,segment:{height:true}});
 
 
         var metricGroupsSet = actdiv(pd,"metric-groups-set");
@@ -87,7 +85,8 @@ var RankingConfig = function( profile ){
                 var mg = d3.select(this);
                 actTitle(mg,"metric-group-title group-title",d.name);
                 var mgp = actdiv(mg,"metric-group-partition partition");
-                createSlider({root:mgp,segments:d.metrics,segment:{height:true}});
+                var mgSlider = createSlider({root:mgp,segments:d.metrics,segment:{height:true}});
+                mgp.style("borderColor",d.color);
 
                 mg.selectAll("g.segment rect").on("click",function(d,i){
                     var rect = d3.select(this);
@@ -128,6 +127,21 @@ var RankingConfig = function( profile ){
                 })
             })
         ;
+
+        var overallDiv = actdiv(pd,"metric-groups-overall");
+        var overallTitle = actTitle(overallDiv,"overall","Overall");
+
+        var metricGroupsPartition = actdiv(overallDiv,"metric-groups-partition partition");
+        me.overallSlider = createSlider({root:metricGroupsPartition,segments:profile.metricGroups,segment:{height:true}});
+
+        metricGroups.selectAll(".metric-group .partition")
+            .data(me.overallSlider.config.segments)
+            .each(function(s){
+                var g = d3.select(this);
+                g.style("border-color",s.color);
+            })
+        ;
+
     }
 
 };

@@ -40,10 +40,15 @@ rect.segment.on {
     align-items: center;
     border-style: solid;
     border-color: #BBDEFB;
-    /*border-width: 2px 0 0 0;*/
-    border-width: 2px 0 0 0;
+    border-width: 0 0 12px 0;
 }
-.metric-groups-partition .partition {    border-width: 2px 0 0 0;}
+.profile{}
+.metric-groups-partition.partition {
+    border-width: 0;
+}
+.metric-ranks-partition.partition {
+    border-width: 0;
+}
 
 
 .title {
