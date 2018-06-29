@@ -19,26 +19,29 @@
 <script>
 
     var profileAction = d3.select("#profileAction");
-    var btnReload = profileAction.append("button").text("Reload");
-    var btnShow = profileAction.append("button").text("Show Me");
+    // var btnReload = profileAction.append("button").text("Reload");
+    // var btnShow = profileAction.append("button").text("Show Me");
 
     var rankingConfig = new RankingConfig({});
 
     var reload = function(){
         d3.json("profile.json",function(errors,profile){
             d3.select("#profileEditor").selectAll("*").remove();
-            rankingConfig.appendTo("#profileEditor",profile);
+            rankingConfig.appendTo("#profileEditor",profile,["save","share-square-o","refresh","close"]);
+            rankingConfig.root.select(".profile-title .fa.fa-refresh").on("click",function(){ reload(); });
         });
     };
 
 
 
+/*
     btnReload.on("click",function(){
         reload();
     });
     btnShow.on("click",function(){
         console.log("Profile: ",rankingConfig.profile);
     });
+*/
     reload();
 
 </script>

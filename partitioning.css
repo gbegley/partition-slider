@@ -9,29 +9,42 @@
   shape-rendering: crispEdges;
 }
 
-rect.segment {fill-opacity: 0.5;stroke:none;}
+rect.segment {
+    fill-opacity: 0.5;
+    stroke:#999;
+    stroke-width: 1;
+}
 rect.segment.on {
     fill-opacity: 1;
-    stroke-width: 5;
-    stroke: lime;
-    stroke-dasharray: 4;
-    stroke-dashoffset: 5;
+    stroke-width: 4;
+    stroke: #333;
+}
+.metric-ranks rect.segment {
+    fill-opacity: 0.7;
+    stroke-width: 1;
+    stroke: #333;
 }
 
-.title {font-family: Roboto; font-weight: bold; font-size: 14px; padding:0.6em;}
+
+.title {font-family: Roboto; font-weight: bold; font-size: 16px; padding:0.6em;}
 .profile-title .title {font-size: 22px;padding: 8px;}
 
-.metric-groups-partition {height:100px;}
+.metric-groups-partition {height:150px;}
 .metric-groups-set {height:600px;align-items:stretch;display:flex;flex-direction: row;}
 .metric-groups {display:flex;flex:1;flex-direction: column; order:-1;}
 .metric-group {display:flex;flex-direction:column;flex:1;}
 .metric-ranks {display:flex;flex-direction:column;flex-basis:300px;}
 .partition {
-    flex:1; margin:0 0.5em; display:flex;align-items: center;
+    flex:1; margin:0 0.5em;
+    display:flex;
+    align-items: center;
     border-style: solid;
     border-color: #BBDEFB;
-    border-width: 1px 0 2px 0;
+    /*border-width: 2px 0 0 0;*/
+    border-width: 2px 0 0 0;
 }
+.metric-groups-partition .partition {    border-width: 2px 0 0 0;}
+
 
 .title {
     display:flex;

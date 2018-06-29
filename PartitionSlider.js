@@ -310,6 +310,7 @@ var PartitionSlider = function( config ){
                         d3.select(this).selectAll("rect").style("fill","white");
                     })
                     .on("drag",function(){
+                        console.log("Drag: "+new Date().getTime())
                         var gSlider = d3.select(this),
                             d = d3.event.subject,
                             p = d.position;

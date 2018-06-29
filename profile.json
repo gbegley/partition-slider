@@ -61,16 +61,22 @@
 		{
 		  "id": "avgLineItems",
 		  "name": "Average Lines Items",
-		  "weight": 1
+		  "weight": 0.2
 		},
 		{
 		  "id": "daysToPay",
 		  "name": "Days to Pay",
-		  "weight": 0
+		  "weight": 0.1
+		},
+		{
+		  "id": "avgDollarsPerLine",
+		  "name": "Avg Dollars Per Line",
+		  "weight": 0.1
 		},
 		{
 		  "id": "pctReturnLines",
-		  "weight": 0
+		  "name": "% Lines Returned",
+		  "weight": 0.6
 		}
 	  ]
 	}

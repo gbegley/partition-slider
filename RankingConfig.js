@@ -61,17 +61,17 @@ var RankingConfig = function( profile ){
     };
 
 
-    me.appendTo = function( root, profile ) {
-        me.root = root;
+    me.appendTo = function( root, profile,tools ) {
+        var me = this;
         me.profile = profile = profile || me.profile;
-        var sroot = d3.select(root);
+        var sroot = me.root = d3.select(root);
 
 
 
         var pd = actdiv(sroot,"profile");
-        actTitle(pd,"profile-title",profile.name);
+        actTitle(pd,"profile-title",profile.name,tools);
         var metricGroupsPartition = actdiv(pd,"metric-groups-partition partition");
-        createSlider({root:metricGroupsPartition,segments:profile.metricGroups});
+        createSlider({root:metricGroupsPartition,segments:profile.metricGroups,segment:{height:true}});
 
 
         var metricGroupsSet = actdiv(pd,"metric-groups-set");
@@ -115,6 +115,15 @@ var RankingConfig = function( profile ){
                             colors : rankColors
                         }
                     });
+                    s.root.selectAll("g.segment rect")
+                        .style("fill-opacity","1")
+                        .style("stroke-width","4")
+                        .transition()
+                        .duration(850)
+                        .ease(d3.easeLinear)
+                        .style("fill-opacity", 0.5)
+                        .style("stroke-width","1")
+                    ;
 
                 })
             })
